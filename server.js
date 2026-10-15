@@ -49,7 +49,7 @@ const __dirname = path.dirname(__filename);
 
 const NODE_ENV = process.env.NODE_ENV || 'production';
 // Defining the port number the server will listen on.
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3005;
 
 /**
  * EXPRESS SETUP
@@ -61,8 +61,16 @@ const app = express();
 const name = process.env.NAME;
 
 /**
- * Configure Express middleware
+ * Configure Express middleware & set upglobal middleware.
  */
+
+// Middleware to make NODE_ENV available to all templates
+app.use((req, res, next) => {
+    res.locals.NODE_ENV = NODE_ENV.toLowerCase() || 'production';
+
+    // Continue to the next middleware or route handler
+    next();
+});
 
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -71,6 +79,66 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 // Tells Express where to find the view templates
 app.set('views', path.join(__dirname, 'src/views'));
+
+// // Middleware to add global data to all templates
+app.use((req, res, next) => {
+    // Add current year for copyright
+    res.locals.currentYear = new Date().getFullYear();
+    console.log(`Current year set to: ${res.locals.currentYear}`);
+
+    next();
+});
+
+app.use((req, res, next) => {
+    // Skip logging for routes that start with /. (like /.well-known/)
+    if (!req.path.startsWith('/.')) {
+        console.log(`${req.method} ${req.url} hiii`);
+    }
+    next(); // Pass control to the next middleware or route
+});
+
+// Global middleware for time-based greeting
+app.use((req, res, next) => {
+    const currentHour = new Date().getHours();
+
+    /**
+     * Create logic to set different greetings based on the current hour.
+     * Use res.locals.greeting to store the greeting message.
+     * Hint: morning (before 12), afternoon (12-17), evening (after 17)
+     */
+    res.locals.greeting = currentHour < 12 ? 'Good morning' : currentHour < 17 ? 'Good afternoon' : 'Good evening';
+
+    next();
+});
+
+// Global middleware for random theme selection
+app.use((req, res, next) => {
+    const themes = ['blue-theme', 'green-theme', 'red-theme'];
+
+    // Your task: Pick a random theme from the array
+    const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+    res.locals.bodyClass = randomTheme;
+
+    next();
+});
+
+// Global middleware to share query parameters with templates
+app.use((req, res, next) => {
+    // Make req.query available to all templates for debugging and conditional rendering
+    res.locals.queryParams = req.query || {};
+
+    next();
+});
+
+// Route-specific middleware that sets custom headers
+const addDemoHeaders = (req, res, next) => {
+    // Your task: Set custom headers using res.setHeader()
+    // Add a header called 'X-Demo-Page' with value 'true'
+    // Add a header called 'X-Middleware-Demo' with any message you want
+    res.setHeader("X-Demo-Page", "true");
+    res.setHeader("X-Middleware-Demo", "This is Sparta!!!!");
+    next();
+};
 
 /**
  * Routes
@@ -90,6 +158,12 @@ app.get('/products', (req, res) => {
     res.render('products', { title });
 });
 
+// Demo page route with header middleware
+app.get('/demo', addDemoHeaders, (req, res) => {
+    res.render('demo', {
+        title: 'Middleware Demo Page'
+    });
+});
 // Course catalog list page
 app.get('/catalog', (req, res) => {
     res.render('catalog', {
