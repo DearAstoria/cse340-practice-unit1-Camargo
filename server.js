@@ -47,8 +47,10 @@ app.use((req, res, next) => {
     next(err);
 });
 
+
 // Global error handler
 app.use((err, req, res, next) => {
+    console.log(`Error: ${err}`)
     // Prevent infinite loops, if a response has already been sent, do nothing
     if (res.headersSent || res.finished) {
         return next(err);
@@ -98,6 +100,7 @@ if (NODE_ENV.includes('dev')) {
         console.error('Failed to start WebSocket server:', error);
     }
 }
+
 
 /**
  * Start Server
