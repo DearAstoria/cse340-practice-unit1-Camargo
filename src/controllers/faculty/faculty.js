@@ -15,7 +15,7 @@ const facultyListPage = (req, res, next) => {
             currentSort: sortBy
         });
         
-        console.log("4. Render successful!");
+        console.log("4. Render successful");
     } catch (err) {
         console.log("Inside of facultyListPage in controllers \n", err.message);
         next(err); // Sending to global error handler.
