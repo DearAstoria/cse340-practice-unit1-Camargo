@@ -1,12 +1,12 @@
-import { getFacultyById, getSortedFaculty } from "../../models/faculty/faculty.js";
+import { getFacultyBySlug, getSortedFaculty } from '../../models/faculty/faculty.js';
 
-const facultyListPage = (req, res, next) => {
+const facultyListPage = async (req, res, next) => {
     try {
         console.log("---- ROUTE HIT: /faculty ----");
-        // 1. Grabbing the sort parameter from the URL
-        const sortBy = req.query.sort || 'name';
+        const validSortOptions = ['name', 'department', 'title'];
+        const sortBy = validSortOptions.includes(req.query.sort) ? req.query.sort : 'name';
         console.log("1. Attempting to get sorted faculty...");
-        const faculty = getSortedFaculty(sortBy);
+        const faculty = await getSortedFaculty(sortBy);
         console.log(`2. Success: Found ${faculty.length} faculty members.`);
         console.log("3. Attempting to render 'faculty/list.ejs'...");
         res.render('faculty/list', {
@@ -22,21 +22,19 @@ const facultyListPage = (req, res, next) => {
     }
 };
 
-const facultyDetailPage = (req, res, next) => {
+const facultyDetailPage = async (req, res, next) => {
     console.log("---- ROUTE HIT: /faculty/:facultyId ----");
-    const facultyID = req.params.facultyId;
-    const faculty = getFacultyById(facultyID);
+    const facultySlug = req.params.facultySlug;
+    const faculty = await getFacultyBySlug(facultySlug);
     console.log("Faculty:\n", faculty)
-    if(!faculty) {
+    if(Object.keys(faculty).length === 0) {
         console.log("Inside of if")
-        const err = new Error(`Faculty ${facultyID} not found`);
+        const err = new Error(`Faculty ${facultySlug} not found`);
         err.status = 404;
         return next(err);
     }
-    // const sortBy = req.params.sortBy || 'name';
-    // const sortedFaculty = getSortedFaculty(sortBy);
     res.render('faculty/detail', {
-        title: `${faculty.name} - ${faculty.title}`,
+        title: `${faculty.name} - Faculty Profile`,
         faculty: faculty
     });
 };

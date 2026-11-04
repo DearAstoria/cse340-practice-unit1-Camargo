@@ -74,10 +74,10 @@ const faculty = {
     }
 };
 
-const getFacultyById = (facultyId) => {
+const getFacultyBySlug = (facultySlug) => {
     let found = null;
     for (const [k, v] of Object.entries(faculty)) {
-        if(k == facultyId){
+        if(k == facultySlug){
             console.log(v)
             found = v; // Returning the faculty object corresponding to the faculty id.
             break;
@@ -87,7 +87,6 @@ const getFacultyById = (facultyId) => {
 };
 
 const getSortedFaculty = (sortBy) => {
-    // TODO: Validate sortBy parameter (name, department, or title), default to 'name' if invalid
     sortBy  = sortBy.toLowerCase();
     switch (sortBy) {
         case "name":
@@ -100,10 +99,9 @@ const getSortedFaculty = (sortBy) => {
             sortBy = "name"
             break;
     }
-    // Create an array of all faculty members
     const facultyArray = [];
     for (const key in faculty) {
-        // Add each individual faculty object to the array
+        // Adding each individual faculty object to the array
         facultyArray.push({...faculty[key], id: key});
     }
 
@@ -123,4 +121,4 @@ const getSortedFaculty = (sortBy) => {
     return facultyArray;
 };
 
-export { getFacultyById, getSortedFaculty };
+export { getFacultyBySlug, getSortedFaculty };
